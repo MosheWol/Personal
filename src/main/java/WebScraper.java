@@ -8,16 +8,24 @@ import org.jsoup.select.Elements;
 import java.io.IOException;
 import java.util.ArrayList;
 
-public class Main {
-    public static void main(String[] args) throws IOException {
+public class WebScraper {
+    ArrayList<String> techs = new ArrayList();// For testing purposes
+    public ArrayList<String> getTechs() {//Getter for testing purposes
+        return techs;
+    }
+
+    public void scrape() throws IOException {
+
         GsonBuilder builder = new GsonBuilder();//Set up for JSON
         builder.setPrettyPrinting();
         Gson gson = builder.create();
+        String jsonString = "";
 
         String url = "https://github.com/egis/handbook/blob/master/Tech-Stack.md";
         Document doc = Jsoup.connect(url).get();//Load the URL
 
         Elements tables = doc.select("table");//Load in tables
+        tables.remove(tables.size()-1);//Remove the Monitoring table
         Elements hTags = doc.select("h1, h2, h3, h4, h5, h6");//Load in tags
 
         Elements h2Tags = hTags.select("h2");
@@ -29,23 +37,26 @@ public class Main {
             for (int i = 1; i < rows.size(); i++) { //first row is the col names so skip it.
                 Element row = rows.get(i);
                 Elements cols = row.select("td");
-                category.Technologies.add(cols.get(0).text());//Get the first col of the row
+                String t = cols.get(0).text();//Get the first col of the row
+                category.technologies.add(t);//Add to category object
+                techs.add(t);
             }
-            String jsonString = gson.toJson(category);//Convert to Json
-            System.out.println(jsonString);
+             jsonString = jsonString + gson.toJson(category);//Convert to Json and append to the String
             j++;
         }
+
+        System.out.println(jsonString);//Print the Json
     }
 
-    static class Category
+     class Category
     {
-        String Area;
-        ArrayList Technologies;
+        String area;
+        ArrayList technologies;
 
         public Category(String n)
         {
-            Area = n;
-            Technologies  = new ArrayList();
+            area = n;
+            technologies  = new ArrayList();
         }
     }
 
